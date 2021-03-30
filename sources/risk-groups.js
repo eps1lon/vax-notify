@@ -1,9 +1,17 @@
 //@ts-check
 import { Octokit } from "@octokit/rest";
+import * as childProcess from "child_process";
 import * as fs from "fs/promises";
-import * as path from "path";
 import * as playwright from "playwright";
 import { URL } from "url";
+
+/**
+ * @param {string} command
+ * @returns {void}
+ */
+function gitSync(command) {
+  childProcess.execSync(`git ${command}`);
+}
 
 // https://github.com/eps1lon/vax-notify/issues/1+
 const ISSUE_NUMBER = 1;
@@ -93,6 +101,21 @@ async function loadRiskGroupsSnapshot(config) {
  */
 async function saveRiskGroups(groups, config) {
   await fs.writeFile(config.snapshotPath, JSON.stringify(groups, null, 2));
+}
+
+/**
+ *
+ * @param {EligibleGroups} groups
+ * @param {{dry: boolean; octokit: Octokit; snapshotPath: URL}} config
+ */
+async function commitRiskGroups(groups, config) {
+  await saveRiskGroups(groups, config);
+
+  if (!config.dry) {
+    gitSync("add -A");
+    gitSync('commit -m "feat: Update eligible groups"');
+    gitSync("push");
+  }
 }
 
 /**
@@ -231,7 +254,7 @@ async function updateRiskGroups(config) {
     updateSummary(groups, config),
     postChangeLogIfChanged(groups, snapshot, config),
   ]);
-  await saveRiskGroups(groups, config);
+  await commitRiskGroups(groups, config);
 }
 
 async function setup() {

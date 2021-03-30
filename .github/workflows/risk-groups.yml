@@ -12,3 +12,5 @@ jobs:
           node-version: "14"
       - run: yarn install
       - run: yarn risk-groups
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

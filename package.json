@@ -1,0 +1,17 @@
+{
+  "name": "vax-notify",
+  "type": "module",
+  "dependencies": {
+    "@octokit/rest": "^18.5.2",
+    "playwright": "^1.10.0"
+  },
+  "scripts": {
+    "format": "yarn prettier --write .",
+    "risk-groups": "node sources/risk-groups.js",
+    "test:types": "tsc -p tsconfig.json"
+  },
+  "devDependencies": {
+    "prettier": "^2.2.1",
+    "typescript": "^4.2.3"
+  }
+}

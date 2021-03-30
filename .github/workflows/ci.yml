@@ -14,4 +14,4 @@ jobs:
       - run: yarn test:types
       - run: yarn risk-groups --dry
       - name: "All changes comitted?"
-        run: run: git diff --exit-code
+        run: git diff --exit-code

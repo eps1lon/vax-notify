@@ -175,7 +175,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
     if (snapshot[id] !== undefined && groups[id] === undefined) {
       removedGroups[id] = snapshot[id];
     } else if (snapshot[id] === undefined && groups[id] !== undefined) {
-      addedGroups[id] = snapshot[id];
+      addedGroups[id] = groups[id];
     } else {
       const labelChanged = snapshot[id].label !== groups[id].label;
       const didChange = labelChanged;

@@ -5,7 +5,6 @@ import * as fs from "fs/promises";
 import * as playwright from "playwright";
 import { URL } from "url";
 
-
 // https://github.com/eps1lon/vax-notify/issues/1+
 const ISSUE_NUMBER = 1;
 

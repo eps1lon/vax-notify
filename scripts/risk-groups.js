@@ -100,7 +100,10 @@ async function loadRiskGroupsSnapshot(config) {
  * @param {{snapshotPath: URL}} config
  */
 async function saveRiskGroups(groups, config) {
-  await fs.writeFile(config.snapshotPath, JSON.stringify(groups, null, 2));
+  await fs.writeFile(
+    config.snapshotPath,
+    JSON.stringify({ groups, lastUpdated: new Date().toISOString() }, null, 2)
+  );
 }
 
 /**

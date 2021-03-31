@@ -3,7 +3,7 @@ on:
     # https://crontab.guru/#*/5_*_*_*_*
     - cron: "*/5 * * * *"
 jobs:
-  risk-groups:
+  free-dates:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

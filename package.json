@@ -11,6 +11,7 @@
     "build": "svelte-kit build",
     "dev": "svelte-kit dev",
     "format": "yarn prettier --write .",
+    "free-dates": "node scripts/free-dates.js",
     "lint": "prettier --check . && eslint --ignore-path .gitignore .",
     "risk-groups": "node scripts/risk-groups.js",
     "start": "svelte-kit start",

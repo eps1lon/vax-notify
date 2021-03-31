@@ -13,5 +13,12 @@ jobs:
       - run: yarn lint
       - run: yarn test:types
       - run: yarn risk-groups --dry
-      - name: "All changes comitted?"
-        run: git diff --exit-code
+      - uses: actions/upload-artifact@v2
+        with:
+          name: eligibleGroups
+          path: data/eligibleGroups.json
+      - run: yarn free-dates --dry
+      - uses: actions/upload-artifact@v2
+        with:
+          name: freeDates
+          path: data/freeDates.json

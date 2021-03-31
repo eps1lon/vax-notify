@@ -17,7 +17,7 @@ jobs:
         with:
           name: eligibleGroups
           path: data/eligibleGroups.json
-      - run: yarn free-dates  
+      - run: yarn free-dates
       - uses: actions/upload-artifact@v2
         with:
           name: freeDates

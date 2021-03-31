@@ -225,7 +225,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
 }
 
 /**
- * @param {{browser: playwright.Browser, dry: boolean, eligibleGroupsUpdatedHook: string, octokit: Octokit,snapshotPath: string}} config
+ * @param {{browser: playwright.Browser, dry: boolean, eligibleGroupsUpdatedHook: string | undefined, octokit: Octokit,snapshotPath: string}} config
  * @returns {Promise<void>}
  */
 async function updateRiskGroups(config) {
@@ -239,7 +239,14 @@ async function updateRiskGroups(config) {
     postChangeLogIfChanged(groups, snapshot, config),
   ]);
   await saveRiskGroups(groups, config);
-  if (didChange) {
+
+  if (didChange && !config.dry) {
+    if (config.eligibleGroupsUpdatedHook === undefined) {
+      throw new TypeError(
+        "Either run with --dry or set `ELIGIBLE_GROUPS_UPDATED_HOOK` environment variable."
+      );
+    }
+
     const hookResponse = await fetch(config.eligibleGroupsUpdatedHook);
     if (!hookResponse.ok) {
       throw new Error(
@@ -269,20 +276,15 @@ async function setup() {
 async function main() {
   const { browser, octokit, teardown } = await setup();
 
+  const dry = process.argv.slice(2).includes("--dry");
   const eligibleGroupsUpdatedHook = process.env.ELIGIBLE_GROUPS_UPDATED_HOOK;
-  if (eligibleGroupsUpdatedHook === undefined) {
-    throw new TypeError(
-      "Forgot to set `ELIGIBLE_GROUPS_UPDATED_HOOK` environment variable."
-    );
-  }
-
   const snapshotPath = new URL("../data/eligibleGroups.json", import.meta.url)
     .pathname;
 
   try {
     await updateRiskGroups({
       browser,
-      dry: process.argv.slice(2).includes("--dry"),
+      dry,
       eligibleGroupsUpdatedHook,
       octokit,
       snapshotPath,

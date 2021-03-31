@@ -3,7 +3,8 @@
   "type": "module",
   "dependencies": {
     "@octokit/rest": "^18.5.2",
-    "playwright": "^1.10.0"
+    "playwright": "^1.10.0",
+    "svelte-check": "^1.3.0"
   },
   "scripts": {
     "build": "svelte-kit build",
@@ -12,7 +13,7 @@
     "lint": "prettier --check . && eslint --ignore-path .gitignore .",
     "risk-groups": "node scripts/risk-groups.js",
     "start": "svelte-kit start",
-    "test:types": "tsc -p tsconfig.json"
+    "test:types": "tsc -p tsconfig.json && svelte-check"
   },
   "devDependencies": {
     "@sveltejs/adapter-vercel": "next",

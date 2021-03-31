@@ -1,14 +1,15 @@
-<script context="module">
-  /**
-   * @type {import('@sveltejs/kit').Load}
-   */
-  export async function load({ fetch }) {
+<script context="module" lang="ts">
+  export const load: import("@sveltejs/kit").Load = async function load({
+    fetch,
+  }) {
     const url = `/eligibleGroups.json`;
     const response = await fetch(url);
 
+    // @ts-expect-error https://github.com/sveltejs/kit/issues/691
     if (response.ok) {
       return {
         props: {
+          // @ts-expect-error https://github.com/sveltejs/kit/issues/691
           groups: await response.json(),
         },
       };
@@ -18,7 +19,7 @@
       status: response.status,
       error: new Error(`Unable to load eligible groups.`),
     };
-  }
+  };
 </script>
 
 <script lang="ts">
@@ -27,9 +28,8 @@
   interface EligibleGroup {
     label: string;
   }
-  type EligibleGroups = Record<string, EligibleGroup>;
 
-  export let groups: EligibleGroups;
+  export let groups: Record<string, EligibleGroup>;
 </script>
 
 <svelte:head>

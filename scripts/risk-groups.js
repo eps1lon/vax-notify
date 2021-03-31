@@ -133,7 +133,7 @@ ${Object.entries(groups)
  * @param {EligibleGroups} groups
  * @param {EligibleGroups} snapshot
  * @param {{dry: boolean; octokit: Octokit}} config
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 async function postChangeLogIfChanged(groups, snapshot, config) {
   /**
@@ -175,7 +175,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
   const didChange = didAddGroups || didRemoveGroups || didChangeGroups;
 
   if (!didChange) {
-    return;
+    return false;
   }
 
   let markdown = `
@@ -220,10 +220,12 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
       body: markdown,
     });
   }
+
+  return true;
 }
 
 /**
- * @param {{browser: playwright.Browser, dry: boolean, octokit: Octokit,snapshotPath: string}} config
+ * @param {{browser: playwright.Browser, dry: boolean, eligibleGroupsUpdatedHook: string, octokit: Octokit,snapshotPath: string}} config
  * @returns {Promise<void>}
  */
 async function updateRiskGroups(config) {
@@ -232,11 +234,21 @@ async function updateRiskGroups(config) {
     loadRiskGroupsSnapshot(),
   ]);
 
-  await Promise.all([
+  const [, didChange] = await Promise.all([
     updateSummary(groups, config),
     postChangeLogIfChanged(groups, snapshot, config),
   ]);
   await saveRiskGroups(groups, config);
+  if (didChange) {
+    const hookResponse = await fetch(config.eligibleGroupsUpdatedHook);
+    if (!hookResponse.ok) {
+      throw new Error(
+        `Failed to trigger deploy hook. ${hookResponse.status}: ${hookResponse.statusText}`
+      );
+    }
+
+    console.log(await hookResponse.json());
+  }
 }
 
 async function setup() {
@@ -257,6 +269,13 @@ async function setup() {
 async function main() {
   const { browser, octokit, teardown } = await setup();
 
+  const eligibleGroupsUpdatedHook = process.env.ELIGIBLE_GROUPS_UPDATED_HOOK;
+  if (eligibleGroupsUpdatedHook === undefined) {
+    throw new TypeError(
+      "Forgot to set `ELIGIBLE_GROUPS_UPDATED_HOOK` environment variable."
+    );
+  }
+
   const snapshotPath = new URL("../data/eligibleGroups.json", import.meta.url)
     .pathname;
 
@@ -264,6 +283,7 @@ async function main() {
     await updateRiskGroups({
       browser,
       dry: process.argv.slice(2).includes("--dry"),
+      eligibleGroupsUpdatedHook,
       octokit,
       snapshotPath,
     });

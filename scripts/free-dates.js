@@ -81,8 +81,8 @@ async function loadFreeDatesSnapshot() {
     );
   }
 
-  const { groups } = await response.json();
-  return groups;
+  const { dates } = await response.json();
+  return dates;
 }
 
 /**

@@ -1,2 +1,5 @@
 .yarn/
-data/
+.svelte/**
+static/**
+build/**
+node_modules/**

@@ -2,6 +2,7 @@
 import { Octokit } from "@octokit/rest";
 import fetch from "cross-fetch";
 import * as fs from "fs/promises";
+import * as path from "path";
 import * as playwright from "playwright";
 import { URL } from "url";
 
@@ -81,15 +82,18 @@ async function loadRiskGroupsSnapshot() {
       `Unable to fetch snapshot. ${response.status}: ${response.statusText}`
     );
   }
-  return response.json();
+
+  const { groups } = await response.json();
+  return groups;
 }
 
 /**
  *
  * @param {EligibleGroups} groups
- * @param {{snapshotPath: URL}} config
+ * @param {{snapshotPath: string}} config
  */
 async function saveRiskGroups(groups, config) {
+  await fs.mkdir(path.dirname(config.snapshotPath), { recursive: true });
   await fs.writeFile(
     config.snapshotPath,
     JSON.stringify({ groups, lastUpdated: new Date().toISOString() }, null, 2)
@@ -219,7 +223,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
 }
 
 /**
- * @param {{browser: playwright.Browser, dry: boolean, octokit: Octokit,snapshotPath: URL}} config
+ * @param {{browser: playwright.Browser, dry: boolean, octokit: Octokit,snapshotPath: string}} config
  * @returns {Promise<void>}
  */
 async function updateRiskGroups(config) {
@@ -253,7 +257,8 @@ async function setup() {
 async function main() {
   const { browser, octokit, teardown } = await setup();
 
-  const snapshotPath = new URL("../data/eligibleGroups.json", import.meta.url);
+  const snapshotPath = new URL("../data/eligibleGroups.json", import.meta.url)
+    .pathname;
 
   try {
     await updateRiskGroups({

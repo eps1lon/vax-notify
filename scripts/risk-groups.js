@@ -33,7 +33,7 @@ async function loadCurrentRiskGroups(config) {
   /**
    * @type {Promise<playwright.Page>}
    */
-  const eligibilityPagePromise = new Promise((resolve, reject) => {
+  const eligibilityPagePromise = new Promise((resolve) => {
     context.addListener("page", (newPage) => {
       resolve(newPage);
     });
@@ -129,7 +129,7 @@ async function updateSummary(groups, config) {
 last update: ${new Date().toISOString()}
 
 ${Object.entries(groups)
-  .map(([id, group]) => {
+  .map(([, group]) => {
     return `* ${group.label}`;
   })
   .join("\n")}
@@ -202,7 +202,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
 
   if (didAddGroups) {
     markdown += `\n#### Neue Gruppen\n${Object.entries(addedGroups)
-      .map(([id, group]) => {
+      .map(([, group]) => {
         return `* ${group.label}`;
       })
       .join("\n")}`;
@@ -210,7 +210,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
 
   if (didRemoveGroups) {
     markdown += `\n#### Gelöschte Gruppen\n${Object.entries(removedGroups)
-      .map(([id, group]) => {
+      .map(([, group]) => {
         return `* ${group.label}`;
       })
       .join("\n")}`;
@@ -218,7 +218,7 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
 
   if (didChangeGroups) {
     markdown += `\n#### Geänderted Gruppen\n${Object.entries(changedGroups)
-      .map(([id, change]) => {
+      .map(([, change]) => {
         return `* 
   \`\`\`diff
   - ${change.old.label}

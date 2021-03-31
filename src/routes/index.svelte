@@ -2,15 +2,18 @@
   export const load: import("@sveltejs/kit").Load = async function load({
     fetch,
   }) {
-    const url = `/eligibleGroups.json`;
+    const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
     const response = await fetch(url);
 
     // @ts-expect-error https://github.com/sveltejs/kit/issues/691
     if (response.ok) {
+      // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+      const { groups, lastUpdated: lastUpdatedString } = await response.json();
+
       return {
         props: {
-          // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-          groups: await response.json(),
+          groups,
+          lastUpdated: new Date(lastUpdatedString),
         },
       };
     }
@@ -30,6 +33,7 @@
   }
 
   export let groups: Record<string, EligibleGroup>;
+  export let lastUpdated: Date;
 </script>
 
 <svelte:head>
@@ -46,7 +50,7 @@
   </p>
 
   <h2>Berechtigte Gruppen</h2>
-  <EligibleGroups {groups} />
+  <EligibleGroups {groups} {lastUpdated} />
 </main>
 
 <footer>

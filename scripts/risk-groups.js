@@ -1,17 +1,10 @@
 //@ts-check
 import { Octokit } from "@octokit/rest";
-import * as childProcess from "child_process";
+import fetch from "cross-fetch";
 import * as fs from "fs/promises";
 import * as playwright from "playwright";
 import { URL } from "url";
 
-/**
- * @param {string} command
- * @returns {void}
- */
-function gitSync(command) {
-  childProcess.execSync(`git ${command}`);
-}
 
 // https://github.com/eps1lon/vax-notify/issues/1+
 const ISSUE_NUMBER = 1;
@@ -77,21 +70,19 @@ async function loadCurrentRiskGroups(config) {
 }
 
 /**
- * @param {{snapshotPath: URL}} config
  * @returns {Promise<EligibleGroups>}
  */
-async function loadRiskGroupsSnapshot(config) {
-  let snapshot = "";
+async function loadRiskGroupsSnapshot() {
+  const response = await fetch(
+    "https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json"
+  );
 
-  try {
-    snapshot = await fs.readFile(config.snapshotPath, {
-      encoding: "utf-8",
-    });
-  } catch {
-    return {};
+  if (!response.ok) {
+    throw new Error(
+      `Unable to fetch snapshot. ${response.status}: ${response.statusText}`
+    );
   }
-
-  return JSON.parse(snapshot);
+  return response.json();
 }
 
 /**
@@ -104,21 +95,6 @@ async function saveRiskGroups(groups, config) {
     config.snapshotPath,
     JSON.stringify({ groups, lastUpdated: new Date().toISOString() }, null, 2)
   );
-}
-
-/**
- *
- * @param {EligibleGroups} groups
- * @param {{dry: boolean; octokit: Octokit; snapshotPath: URL}} config
- */
-async function commitRiskGroups(groups, config) {
-  await saveRiskGroups(groups, config);
-
-  if (!config.dry) {
-    gitSync("add -A");
-    gitSync('commit -m "feat: Update eligible groups"');
-    gitSync("push");
-  }
 }
 
 /**
@@ -250,14 +226,14 @@ async function postChangeLogIfChanged(groups, snapshot, config) {
 async function updateRiskGroups(config) {
   const [groups, snapshot] = await Promise.all([
     loadCurrentRiskGroups(config),
-    loadRiskGroupsSnapshot(config),
+    loadRiskGroupsSnapshot(),
   ]);
 
   await Promise.all([
     updateSummary(groups, config),
     postChangeLogIfChanged(groups, snapshot, config),
   ]);
-  await commitRiskGroups(groups, config);
+  await saveRiskGroups(groups, config);
 }
 
 async function setup() {
@@ -278,10 +254,7 @@ async function setup() {
 async function main() {
   const { browser, octokit, teardown } = await setup();
 
-  const snapshotPath = new URL(
-    "../static/eligibleGroups.json",
-    import.meta.url
-  );
+  const snapshotPath = new URL("../data/eligibleGroups.json", import.meta.url);
 
   try {
     await updateRiskGroups({

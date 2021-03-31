@@ -2,7 +2,7 @@
   export const load: import("@sveltejs/kit").Load = async function load({
     fetch,
   }) {
-    const url = `/eligibleGroups.json`;
+    const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
     const response = await fetch(url);
 
     // @ts-expect-error https://github.com/sveltejs/kit/issues/691

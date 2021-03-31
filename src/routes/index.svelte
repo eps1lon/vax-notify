@@ -39,9 +39,51 @@
 <main>
   <h1>Covid-19 Impftermin Benachrichtigungsportal</h1>
 
+  <p>
+    Daten basierend auf <a href="https://sachsen.impfterminvergabe.de/"
+      >https://sachsen.impfterminvergabe.de/</a
+    >.
+  </p>
+
   <h2>Berechtigte Gruppen</h2>
   <EligibleGroups {groups} />
 </main>
+
+<footer>
+  <h2>Weiterführende Links</h2>
+  <nav>
+    <ul>
+      <li>
+        <a href="https://sachsen.impfterminvergabe.de/"
+          >Serviceportal zur Impfung gegen das Coronavirus in Sachsen</a
+        >
+      </li>
+      <li>
+        <a href="https://www.countee.ch/app/de/counter/impfee/_iz_sachsen"
+          >Freie Impftermine in Sachsen</a
+        >
+      </li>
+    </ul>
+  </nav>
+
+  <h2>Impressum</h2>
+  <address>
+    <dl>
+      <dt>Name</dt>
+      <dd>Sebastian Silbermann</dd>
+      <dt>Mail</dt>
+      <dd>
+        <a href="mailto:silbermann.sebastian@gmail.com"
+          >silbermann.sebastian@gmail.com</a
+        >
+      </dd>
+      <dt>GitHub</dt>
+      <dd><a href="https://github.com/eps1lon">@eps1lon</a></dd>
+      <dt>Website</dt>
+      <dd><a href="https://solverfox.dev">solverfox.dev</a></dd>
+    </dl>
+  </address>
+</footer>
 
 <style>
   main {
@@ -54,5 +96,10 @@
     font-size: 4rem;
     font-weight: 100;
     line-height: 1.1;
+  }
+
+  footer {
+    border-top: 1px solid black;
+    font-size: 0.9em;
   }
 </style>

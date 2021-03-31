@@ -275,7 +275,10 @@ async function setup() {
 async function main() {
   const { browser, octokit, teardown } = await setup();
 
-  const snapshotPath = new URL("../data/eligibleGroups.json", import.meta.url);
+  const snapshotPath = new URL(
+    "../static/eligibleGroups.json",
+    import.meta.url
+  );
 
   try {
     await updateRiskGroups({

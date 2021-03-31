@@ -221,13 +221,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sveltejs/adapter-node@npm:next":
-  version: 1.0.0-next.10
-  resolution: "@sveltejs/adapter-node@npm:1.0.0-next.10"
-  checksum: 9b816a304062e8c38466d3e2d8ab07d3129088e2c134657bdb9bbd31b353ac6f068a0a3cfedaa0e4f565b941b978d78d1d66ad130dc07f8c3e7f9de18dab4781
-  languageName: node
-  linkType: hard
-
 "@sveltejs/adapter-vercel@npm:next":
   version: 1.0.0-next.8
   resolution: "@sveltejs/adapter-vercel@npm:1.0.0-next.8"
@@ -2802,7 +2795,6 @@ typescript@^4.2.3:
   resolution: "vax-notify@workspace:."
   dependencies:
     "@octokit/rest": ^18.5.2
-    "@sveltejs/adapter-node": next
     "@sveltejs/adapter-vercel": next
     "@sveltejs/kit": next
     "@typescript-eslint/eslint-plugin": ^4.19.0

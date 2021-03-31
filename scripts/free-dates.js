@@ -1,9 +1,12 @@
 //@ts-check
+import { Octokit } from "@octokit/rest";
 import fetch from "cross-fetch";
 import * as fs from "fs/promises";
 import * as path from "path";
 import * as playwright from "playwright";
 import { URL } from "url";
+
+const ISSUE_NUMBER = 8;
 
 /**
  * @typedef {Record<string, number>} VaxDates
@@ -96,13 +99,141 @@ async function saveFreeDates(dates, config) {
 }
 
 /**
- * @param {{browser: playwright.Browser, dry: boolean, snapshotPath: string}} config
+ *
+ * @param {VaxDates} dates
+ * @param {{dry: boolean,octokit: Octokit}} config
+ * @returns {Promise<void>}
+ */
+async function updateSummary(dates, config) {
+  const markdown = `
+last update: ${new Date().toISOString()}
+
+${Object.entries(dates)
+  .map(([name, dates]) => {
+    return `* ${name}: ${dates}`;
+  })
+  .join("\n")}
+`;
+
+  if (config.dry) {
+    console.log(markdown);
+  } else {
+    await config.octokit.issues.update({
+      issue_number: ISSUE_NUMBER,
+      owner: "eps1lon",
+      repo: "vax-notify",
+      body: markdown,
+    });
+  }
+}
+
+/**
+ * @param {VaxDates} dates
+ * @param {VaxDates} snapshot
+ * @param {{dry: boolean; octokit: Octokit}} config
+ * @returns {Promise<boolean>}
+ */
+async function postChangeLogIfChanged(dates, snapshot, config) {
+  /**
+   * @type {string[]}
+   */
+  const removedCentres = [];
+  /**
+   * @type {string[]}
+   */
+  const addedCentres = [];
+  /**
+   * @type {Record<keyof VaxDates, {old: VaxDates[string], new: VaxDates[string]}>}
+   */
+  const changedDates = {};
+
+  const allGroupdIds = new Set([
+    ...Object.keys(dates),
+    ...Object.keys(snapshot),
+  ]);
+  allGroupdIds.forEach((id) => {
+    if (snapshot[id] !== undefined && dates[id] === undefined) {
+      removedCentres.push(id);
+    } else if (snapshot[id] === undefined && dates[id] !== undefined) {
+      addedCentres.push(id);
+    } else {
+      const didChange = snapshot[id] !== dates[id];
+
+      if (didChange) {
+        changedDates[id] = { old: snapshot[id], new: dates[id] };
+      }
+    }
+  });
+
+  const didAddCentres = Object.keys(addedCentres).length > 0;
+  const didRemoveCentres = Object.keys(removedCentres).length > 0;
+  const didChangeDates = Object.keys(changedDates).length > 0;
+
+  const didChange = didAddCentres || didRemoveCentres || didChangeDates;
+
+  if (!didChange) {
+    return false;
+  }
+
+  let markdown = `
+ ### Änderungen am ${new Date().toISOString()}  
+`;
+
+  if (didAddCentres) {
+    markdown += `\n#### Neue Zentren\n${Object.entries(addedCentres)
+      .map(([name, dates]) => {
+        return `* ${name}: ${dates}`;
+      })
+      .join("\n")}`;
+  }
+
+  if (didRemoveCentres) {
+    markdown += `\n#### GElöschte Zentren\n${Object.entries(removedCentres)
+      .map(([name, dates]) => {
+        return `* ${name}: ${dates}`;
+      })
+      .join("\n")}`;
+  }
+
+  if (didChangeDates) {
+    markdown += `\n#### Geänderted Gruppen\n${Object.entries(changedDates)
+      .map(([name, change]) => {
+        return `* ${name}
+  \`\`\`diff
+  - ${change.old}
+  + ${change.new}
+  \`\`\``;
+      })
+      .join("\n")}`;
+  }
+
+  if (config.dry) {
+    console.log(markdown);
+  } else {
+    await config.octokit.issues.createComment({
+      issue_number: ISSUE_NUMBER,
+      owner: "eps1lon",
+      repo: "vax-notify",
+      body: markdown,
+    });
+  }
+
+  return true;
+}
+
+/**
+ * @param {{browser: playwright.Browser, dry: boolean, octokit: Octokit, snapshotPath: string}} config
  * @returns {Promise<void>}
  */
 async function updateFreeDates(config) {
   const [freeDates, snapshot] = await Promise.all([
     loadCurrentFreeDates(config),
     loadFreeDatesSnapshot(),
+  ]);
+
+  await Promise.all([
+    updateSummary(freeDates, config),
+    postChangeLogIfChanged(freeDates, snapshot, config),
   ]);
 
   await saveFreeDates(freeDates, config);
@@ -112,9 +243,11 @@ async function setup() {
   const browserLaunch = playwright.chromium.launch();
 
   const [browser] = await Promise.all([browserLaunch]);
+  const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
 
   return {
     browser,
+    octokit,
     teardown: async () => {
       await Promise.all([browser.close()]);
     },
@@ -122,7 +255,7 @@ async function setup() {
 }
 
 async function main() {
-  const { browser, teardown } = await setup();
+  const { browser, octokit, teardown } = await setup();
 
   const dry = process.argv.slice(2).includes("--dry");
   const snapshotPath = new URL("../data/freeDates.json", import.meta.url)
@@ -132,6 +265,7 @@ async function main() {
     await updateFreeDates({
       browser,
       dry,
+      octokit,
       snapshotPath,
     });
   } finally {

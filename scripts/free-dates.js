@@ -16,6 +16,15 @@ const ISSUE_NUMBER = 8;
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 
+/**
+ * @type {Mail}
+ */
+const dryMail = {
+  async sendFreeDates(centre) {
+    console.log(`free dates for centre '${centre}'`);
+  },
+};
+
 const SENDER_ID = 1499870;
 const LIST_ID = __DEV__
   ? "9d668146-89c7-47b4-b600-65e1d73ce60f"
@@ -41,7 +50,6 @@ const CENTRE_TO_SUPRESSION_GROUP_ID = {
 };
 
 // TESTING
-const MOCK_FREE_DATES = process.argv.slice(2).includes("--mock-free-dates");
 const NOTIFY_ABOUT_NO_DATES = process.argv
   .slice(2)
   .includes("--notify-no-dates");
@@ -55,10 +63,6 @@ const NOTIFY_ABOUT_NO_DATES = process.argv
  * @returns {Promise<VaxDates>}
  */
 async function loadCurrentFreeDates(config) {
-  if (MOCK_FREE_DATES) {
-    return loadFreeDatesSnapshot();
-  }
-
   const context = await config.browser.newContext();
 
   const page = await context.newPage();
@@ -460,7 +464,7 @@ async function main() {
     await updateFreeDates({
       browser,
       dry,
-      mail: sgGrid,
+      mail: dry ? dryMail : sgGrid,
       octokit,
       snapshotPath,
     });

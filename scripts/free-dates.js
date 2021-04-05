@@ -48,7 +48,7 @@ async function loadCurrentFreeDates(config) {
       }
       const freeDatesMatch = text
         .replace(name, "")
-        .match(/^\s*(\d+)\s*freie Termine/);
+        .match(/^\s*(\d+)\s*(freier Termin|freie Termine)/);
       if (freeDatesMatch === null) {
         throw new Error(`Unable to parse free dates in '${text}'.`);
       }

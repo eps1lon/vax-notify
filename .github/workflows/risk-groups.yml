@@ -14,7 +14,7 @@ jobs:
       - run: yarn risk-groups
         env:
           ELIGIBLE_GROUPS_UPDATED_HOOK: ${{ secrets.ELIGIBLE_GROUPS_UPDATED_HOOK }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.NOTIFY_GITHUB_TOKEN }}
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:

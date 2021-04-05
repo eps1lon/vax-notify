@@ -12,12 +12,12 @@ jobs:
       - run: yarn install
       - run: yarn lint
       - run: yarn test:types
-      - run: yarn risk-groups --dry --mock-free-dates --notify-no-dates
+      - run: yarn risk-groups --dry
       - uses: actions/upload-artifact@v2
         with:
           name: eligibleGroups
           path: data/eligibleGroups.json
-      - run: yarn free-dates --dry
+      - run: yarn free-dates --dry --mock-free-dates --notify-no-dates
       - uses: actions/upload-artifact@v2
         with:
           name: freeDates

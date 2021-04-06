@@ -10,16 +10,17 @@
   const orderedGroups = Object.keys(groups).map((id) => groups[id]);
 </script>
 
-<p>
-  Zuletzt aktualisiert: <time datetime={lastUpdated.toISOString()}
-    >{lastUpdated.toLocaleString()}</time
-  >
-</p>
 <ul>
   {#each orderedGroups as group}
     <li>{group.label}</li>
   {/each}
 </ul>
+
+<p>
+  Zuletzt aktualisiert: <time datetime={lastUpdated.toISOString()}
+    >{lastUpdated.toLocaleString()}</time
+  >
+</p>
 
 <style>
 </style>

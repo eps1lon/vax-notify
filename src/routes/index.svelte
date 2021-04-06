@@ -2,30 +2,66 @@
   export const load: import("@sveltejs/kit").Load = async function load({
     fetch,
   }) {
-    const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
-    const response = await fetch(url);
+    async function loadRiskGroups() {
+      const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
+      const response = await fetch(url);
 
-    // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-    if (response.ok) {
       // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-      const { groups, lastUpdated: lastUpdatedString } = await response.json();
+      if (response.ok) {
+        const {
+          groups,
+          lastUpdated: lastUpdatedString,
+          // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+        } = await response.json();
+
+        return {
+          groups,
+          groupsLastUpdated: new Date(lastUpdatedString),
+        };
+      }
+    }
+
+    async function loadFreeDates() {
+      const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/freeDates.json`;
+      const response = await fetch(url);
+
+      // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+      if (response.ok) {
+        // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+        const { dates, lastUpdated: lastUpdatedString } = await response.json();
+
+        return {
+          dates,
+          datesLastUpdated: new Date(lastUpdatedString),
+        };
+      }
+    }
+
+    try {
+      const [riskGroupProps, freeDatesProps] = await Promise.all([
+        loadRiskGroups(),
+        loadFreeDates(),
+      ]);
 
       return {
         props: {
-          groups,
-          lastUpdated: new Date(lastUpdatedString),
+          ...riskGroupProps,
+          ...freeDatesProps,
         },
       };
+    } catch (error) {
+      return {
+        status: 500,
+        error: new Error(`Unable to load eligible groups.`),
+      };
     }
-
-    return {
-      status: response.status,
-      error: new Error(`Unable to load eligible groups.`),
-    };
   };
 </script>
 
 <script lang="ts">
+  import { dev } from "$app/env";
+  import { onMount } from "svelte";
+  import FreeDates from "$lib/FreeDates.svelte";
   import EligibleGroups from "$lib/EligibleGroups.svelte";
 
   interface EligibleGroup {
@@ -33,24 +69,66 @@
   }
 
   export let groups: Record<string, EligibleGroup>;
-  export let lastUpdated: Date;
+  export let groupsLastUpdated: Date;
+
+  export let dates: Record<string, number>;
+  export let datesLastUpdated: Date;
+  async function revalidateDates() {
+    if (dev) {
+      console.log("revalidating free dates");
+    }
+
+    fetch(
+      "https://vax-notify.s3.eu-central-1.amazonaws.com/data/freeDates.json"
+    ).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      const { lastUpdated, dates: currentDates } = await response.json();
+
+      datesLastUpdated = new Date(lastUpdated);
+      dates = currentDates;
+    });
+  }
+
+  function revalidatePeriodically(timeoutMS: number): void {
+    setTimeout(async () => {
+      try {
+        await revalidateDates();
+      } finally {
+        revalidatePeriodically(timeoutMS);
+      }
+    }, timeoutMS);
+  }
+
+  onMount(() => {
+    revalidatePeriodically(1000 * 60 * 5);
+    revalidateDates();
+  });
 </script>
 
 <svelte:head>
   <title>Covid-19 Impftermin Benachrichtigungsportal</title>
 </svelte:head>
 
+<svelte:window on:focus={revalidateDates} />
+
 <main>
   <h1>Covid-19 Impftermin Benachrichtigungsportal</h1>
 
   <p>
-    Daten basierend auf <a href="https://sachsen.impfterminvergabe.de/"
-      >https://sachsen.impfterminvergabe.de/</a
-    >.
+    Jetzt <a href="https://sachsen.impfterminvergabe.de/">Termin buchen</a>.
   </p>
 
+  <h2 id="free-dates-heading">Freie Termine</h2>
+  <FreeDates
+    ariaLabelledBy="free-dates-heading"
+    centres={dates}
+    lastUpdated={datesLastUpdated}
+  />
+
   <h2>Berechtigte Gruppen</h2>
-  <EligibleGroups {groups} {lastUpdated} />
+  <EligibleGroups {groups} lastUpdated={groupsLastUpdated} />
 </main>
 
 <footer>

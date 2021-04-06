@@ -59,6 +59,7 @@
 </script>
 
 <script lang="ts">
+  // @ts-expect-error -- TODO
   import { dev } from "$app/env";
   import { onMount } from "svelte";
   import FreeDates from "$lib/FreeDates.svelte";

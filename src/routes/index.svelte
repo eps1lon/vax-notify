@@ -70,6 +70,14 @@
     </ul>
   </nav>
 
+  <h2>Quelltext</h2>
+  <p>
+    Quelltext veröffentlich auf <a href="https://github.com/eps1lon/vax-notify">
+      github:eps1lon/vax-notify</a
+    >
+    unter <a href="https://opensource.org/licenses/MIT">MIT Lizenz</a>.
+  </p>
+
   <h2>Impressum</h2>
   <address>
     <dl>

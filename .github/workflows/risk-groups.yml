@@ -23,4 +23,4 @@ jobs:
           aws-region: eu-central-1
       - name: Upload eligible groups
         run: |
-          aws s3 sync data s3://vax-notify/data --exclude='*' --include='*/eligibleGroups.json'
+          aws s3 sync data s3://vax-notify/data --exclude='*' --include='eligibleGroups.json'

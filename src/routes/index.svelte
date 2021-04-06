@@ -8,10 +8,10 @@
 
       // @ts-expect-error https://github.com/sveltejs/kit/issues/691
       if (response.ok) {
-        // @ts-expect-error https://github.com/sveltejs/kit/issues/691
         const {
           groups,
           lastUpdated: lastUpdatedString,
+          // @ts-expect-error https://github.com/sveltejs/kit/issues/691
         } = await response.json();
 
         return {

@@ -55,6 +55,17 @@ const NOTIFY_ABOUT_NO_DATES = process.argv
   .includes("--notify-no-dates");
 
 /**
+ * @remarks We observed that for "Dresden IZ" the number of available dates frequently changed between 0-2.
+ *          We don't consider these new dates or at least we don't want to send notifications for it.
+ * @param {number} oldCount
+ * @param {number} newCount
+ * @returns {boolean} If change of available dates is not transient
+ */
+function newDatesAvailable(oldCount, newCount) {
+  return oldCount <= 2 && newCount >= 2 && newCount - oldCount >= 2;
+}
+
+/**
  * @typedef {Record<string, number>} VaxDates
  */
 
@@ -279,9 +290,7 @@ async function sendNewsletterIfNewDatesAvailable(dates, snapshot, config) {
    */
   const centresWithNewDates = new Set();
   Object.keys(dates).forEach((centre) => {
-    const hadNoDates = snapshot[centre] === 0 || snapshot[centre] === undefined;
-    const hasDates = dates[centre] > 0;
-    if (hadNoDates && hasDates) {
+    if (newDatesAvailable(snapshot[centre] ?? 0, dates[centre] ?? 0)) {
       centresWithNewDates.add(centre);
     }
   });

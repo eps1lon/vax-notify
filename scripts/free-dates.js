@@ -2,13 +2,14 @@
 import { Octokit } from "@octokit/rest";
 import fetch, { Request } from "cross-fetch";
 import * as fs from "fs/promises";
+import Mustache from "mustache";
 import * as path from "path";
 import * as playwright from "playwright";
 import { URL } from "url";
 
 /**
  * @typedef {object} Mail
- * @property {(centre: string) => Promise<void>} sendFreeDates
+ * @property {(data: { centre: string, freeDates: number }) => Promise<void>} sendFreeDates
  */
 
 const __DEV__ = process.env.NODE_ENV !== "production";
@@ -20,8 +21,8 @@ const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
  * @type {Mail}
  */
 const dryMail = {
-  async sendFreeDates(centre) {
-    console.log(`free dates for centre '${centre}'`);
+  async sendFreeDates(data) {
+    console.log(`${data.freeDates} free dates for centre '${data.centre}'`);
   },
 };
 
@@ -302,7 +303,7 @@ async function sendNewsletterIfNewDatesAvailable(dates, snapshot, config) {
   const results = await Promise.allSettled(
     Array.from(sendNotificationsFor, async (centre) => {
       try {
-        await config.mail.sendFreeDates(centre);
+        await config.mail.sendFreeDates({ centre, freeDates: dates[centre] });
       } catch (error) {
         error.message = `${centre}: ${error.message}`;
         throw error;
@@ -403,7 +404,8 @@ function setupSendGrid() {
   }
 
   return {
-    async sendFreeDates(centre) {
+    async sendFreeDates(data) {
+      const { centre, freeDates } = data;
       const supressionGroupID = CENTRE_TO_SUPRESSION_GROUP_ID[centre];
       if (supressionGroupID === undefined) {
         throw new TypeError(
@@ -412,6 +414,14 @@ function setupSendGrid() {
           )}?`
         );
       }
+
+      const htmlContent = await fs
+        .readFile(new URL("./free-dates.mustache", import.meta.url), {
+          encoding: "utf-8",
+        })
+        .then((template) => {
+          return Mustache.render(template, { centre, freeDates });
+        });
 
       const singleSend = await sgGridRequest("/marketing/singlesends", {
         method: "POST",
@@ -422,7 +432,7 @@ function setupSendGrid() {
           },
           email_config: {
             subject: `${centre}: neue Covid-19 Impftermine`,
-            html_content: "Hello, Dave!",
+            html_content: htmlContent,
             suppression_group_id: supressionGroupID,
             sender_id: SENDER_ID,
           },
@@ -466,6 +476,7 @@ async function main() {
   const { browser, octokit, sgGrid, teardown } = await setup();
 
   const dry = process.argv.slice(2).includes("--dry");
+  const useDryMail = process.argv.slice(2).includes("--dryMail");
   const snapshotPath = new URL("../data/freeDates.json", import.meta.url)
     .pathname;
 
@@ -473,7 +484,7 @@ async function main() {
     await updateFreeDates({
       browser,
       dry,
-      mail: dry ? dryMail : sgGrid,
+      mail: useDryMail ? dryMail : sgGrid,
       octokit,
       snapshotPath,
     });

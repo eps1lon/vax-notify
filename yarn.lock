@@ -270,6 +270,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/mustache@npm:^4.1.1":
+  version: 4.1.1
+  resolution: "@types/mustache@npm:4.1.1"
+  checksum: 16a9041eefd5d1e0aae8a86503d19e42daa45f6a0161089d47ab29afa192f67f5fef4b3efee52610547254b0a8648dabde1cd53bc0cc088c3ed06a8ab3edb782
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*":
   version: 14.14.37
   resolution: "@types/node@npm:14.14.37"
@@ -1922,6 +1929,15 @@ fsevents@~2.3.1:
   languageName: node
   linkType: hard
 
+"mustache@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "mustache@npm:4.2.0"
+  bin:
+    mustache: bin/mustache
+  checksum: 55540771ed2ca0a72d44c747bd57531ca70fd54c4b420eee580ef5ea021101359e679fbadf40f467e69be2b9086fa6a7be8613e91261fa072d5e321f66eaa748
+  languageName: node
+  linkType: hard
+
 "nanoid@npm:^3.1.22":
   version: 3.1.22
   resolution: "nanoid@npm:3.1.22"
@@ -2894,12 +2910,14 @@ resolve@^1.19.0:
     "@octokit/rest": ^18.5.2
     "@sveltejs/adapter-vercel": next
     "@sveltejs/kit": next
+    "@types/mustache": ^4.1.1
     "@typescript-eslint/eslint-plugin": ^4.19.0
     "@typescript-eslint/parser": ^4.19.0
     cross-fetch: ^3.1.4
     eslint: ^7.22.0
     eslint-config-prettier: ^8.1.0
     eslint-plugin-svelte3: ^3.1.0
+    mustache: ^4.2.0
     playwright: ^1.10.0
     prettier: ^2.2.1
     prettier-plugin-svelte: ^2.2.0

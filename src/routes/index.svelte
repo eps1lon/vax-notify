@@ -2,30 +2,65 @@
   export const load: import("@sveltejs/kit").Load = async function load({
     fetch,
   }) {
-    const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
-    const response = await fetch(url);
+    async function loadRiskGroups() {
+      const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
+      const response = await fetch(url);
 
-    // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-    if (response.ok) {
       // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-      const { groups, lastUpdated: lastUpdatedString } = await response.json();
+      if (response.ok) {
+        // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+        const {
+          groups,
+          lastUpdated: lastUpdatedString,
+        } = await response.json();
+
+        return {
+          groups,
+          groupsLastUpdated: new Date(lastUpdatedString),
+        };
+      }
+    }
+
+    async function loadFreeDates() {
+      const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/freeDates.json`;
+      const response = await fetch(url);
+
+      // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+      if (response.ok) {
+        // @ts-expect-error https://github.com/sveltejs/kit/issues/691
+        const { dates, lastUpdated: lastUpdatedString } = await response.json();
+
+        return {
+          dates,
+          datesLastUpdated: new Date(lastUpdatedString),
+        };
+      }
+    }
+
+    try {
+      const [riskGroupProps, freeDatesProps] = await Promise.all([
+        loadRiskGroups(),
+        loadFreeDates(),
+      ]);
 
       return {
         props: {
-          groups,
-          lastUpdated: new Date(lastUpdatedString),
+          ...riskGroupProps,
+          ...freeDatesProps,
         },
       };
+    } catch (error) {
+      return {
+        status: 500,
+        error: new Error(`Unable to load eligible groups.`),
+      };
     }
-
-    return {
-      status: response.status,
-      error: new Error(`Unable to load eligible groups.`),
-    };
   };
 </script>
 
 <script lang="ts">
+  import { browser } from "$app/env";
+  import FreeDates from "$lib/FreeDates.svelte";
   import EligibleGroups from "$lib/EligibleGroups.svelte";
 
   interface EligibleGroup {
@@ -33,7 +68,40 @@
   }
 
   export let groups: Record<string, EligibleGroup>;
-  export let lastUpdated: Date;
+  export let groupsLastUpdated: Date;
+
+  const fetchFreeDates: Promise<{
+    dates: Record<string, number>;
+    lastUpdated: Date;
+  }> = browser
+    ? fetch(
+        "https://vax-notify.s3.eu-central-1.amazonaws.com/data/freeDates.json"
+      ).then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`${response.status}: ${response.statusText}`);
+        }
+        const { lastUpdated, dates } = await response.json();
+
+        return { lastUpdated: new Date(lastUpdated), dates };
+      })
+    : Promise.resolve({
+        dates: {
+          "Bautzen IZ": 134,
+          "Belgern IZ": 213,
+          "Borna IZ": 0,
+          "Chemnitz IZ": 367,
+          "Dresden IZ": 0,
+          "Eich IZ": 620,
+          "Erz IZ": 81,
+          "Leipzig Messe IZ": 1,
+          "Löbau IZ": 618,
+          "Mittweida IZ": 657,
+          "Pirna IZ": 462,
+          "Riesa IZ": 1,
+          "Zwickau IZ": 0,
+        },
+        lastUpdated: new Date(),
+      });
 </script>
 
 <svelte:head>
@@ -44,13 +112,29 @@
   <h1>Covid-19 Impftermin Benachrichtigungsportal</h1>
 
   <p>
-    Daten basierend auf <a href="https://sachsen.impfterminvergabe.de/"
-      >https://sachsen.impfterminvergabe.de/</a
-    >.
+    Jetzt <a href="https://sachsen.impfterminvergabe.de/">Termin buchen</a>.
   </p>
 
+  <h2 id="free-dates-heading">Freie Termine</h2>
+  {#await fetchFreeDates}
+    <p>Freie Termine werden geladen</p>
+  {:then data}
+    <FreeDates
+      ariaLabelledBy="free-dates-heading"
+      centres={data.dates}
+      lastUpdated={data.lastUpdated}
+    />
+  {:catch error}
+    <p>
+      Freie Termine konnten nicht geladen werden. Auf <a
+        href="https://www.countee.ch/app/de/counter/impfee/_iz_sachsen"
+        >Freie Impftermine in Sachsen</a
+      > findest du eine aktuelle Übersicht.
+    </p>
+  {/await}
+
   <h2>Berechtigte Gruppen</h2>
-  <EligibleGroups {groups} {lastUpdated} />
+  <EligibleGroups {groups} lastUpdated={groupsLastUpdated} />
 </main>
 
 <footer>

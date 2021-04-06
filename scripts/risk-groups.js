@@ -1,12 +1,9 @@
 //@ts-check
 import { Octokit } from "@octokit/rest";
-import fetch from "cross-fetch";
-import * as fs from "fs/promises";
-import * as path from "path";
 import process from "process";
 import * as playwright from "playwright";
 import { URL } from "url";
-import updateRiskGroups from "./lib/updateRiskGroups";
+import updateRiskGroups from "./lib/updateRiskGroups.js";
 
 async function setup() {
   const browserLaunch = playwright.chromium.launch();

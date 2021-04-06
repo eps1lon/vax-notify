@@ -15,7 +15,7 @@ import * as os from "os";
 import * as path from "path";
 import playwright from "playwright";
 import * as url from "url";
-import updateRiskGroups from "../updateRiskGroups";
+import updateRiskGroups from "../updateRiskGroups.js";
 
 describe("updateRiskGroups", () => {
   beforeEach(() => {

@@ -59,6 +59,8 @@
 </script>
 
 <script lang="ts">
+  import { dev } from "$app/env";
+  import { onMount } from "svelte";
   import FreeDates from "$lib/FreeDates.svelte";
   import EligibleGroups from "$lib/EligibleGroups.svelte";
 
@@ -71,11 +73,45 @@
 
   export let dates: Record<string, number>;
   export let datesLastUpdated: Date;
+  async function revalidateDates() {
+    if (dev) {
+      console.log("revalidating free dates");
+    }
+
+    fetch(
+      "https://vax-notify.s3.eu-central-1.amazonaws.com/data/freeDates.json"
+    ).then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+      const { lastUpdated, dates: currentDates } = await response.json();
+
+      datesLastUpdated = new Date(lastUpdated);
+      dates = currentDates;
+    });
+  }
+
+  function revalidatePeriodically(timeoutMS: number): void {
+    setTimeout(async () => {
+      try {
+        await revalidateDates();
+      } finally {
+        revalidatePeriodically(timeoutMS);
+      }
+    }, timeoutMS);
+  }
+
+  onMount(() => {
+    revalidatePeriodically(1000 * 60 * 5);
+    revalidateDates();
+  });
 </script>
 
 <svelte:head>
   <title>Covid-19 Impftermin Benachrichtigungsportal</title>
 </svelte:head>
+
+<svelte:window on:focus={revalidateDates} />
 
 <main>
   <h1>Covid-19 Impftermin Benachrichtigungsportal</h1>

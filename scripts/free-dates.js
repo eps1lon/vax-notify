@@ -242,17 +242,17 @@ async function postChangeLogIfChanged(dates, snapshot, config) {
 `;
 
   if (didAddCentres) {
-    markdown += `\n#### Neue Zentren\n${Object.entries(addedCentres)
-      .map(([name, dates]) => {
-        return `* ${name}: ${dates}`;
+    markdown += `\n#### Neue Zentren\n${addedCentres
+      .map((name) => {
+        return `* ${name}`;
       })
       .join("\n")}`;
   }
 
   if (didRemoveCentres) {
-    markdown += `\n#### GElöschte Zentren\n${Object.entries(removedCentres)
-      .map(([name, dates]) => {
-        return `* ${name}: ${dates}`;
+    markdown += `\n#### Gelöschte Zentren\n${removedCentres.forEach
+      .map((name) => {
+        return `* ${name}`;
       })
       .join("\n")}`;
   }

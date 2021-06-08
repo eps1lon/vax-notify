@@ -19,7 +19,7 @@
     "lint": "prettier --check . && eslint --ignore-path .gitignore .",
     "risk-groups": "node scripts/risk-groups.js",
     "start": "svelte-kit start",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest --passWithNoTests",
     "test:types": "tsc -p tsconfig.json && svelte-check"
   },
   "devDependencies": {

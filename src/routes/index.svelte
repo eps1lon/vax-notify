@@ -38,14 +38,10 @@
     }
 
     try {
-      const [riskGroupProps, freeDatesProps] = await Promise.all([
-        loadRiskGroups(),
-        loadFreeDates(),
-      ]);
+      const [freeDatesProps] = await Promise.all([loadFreeDates()]);
 
       return {
         props: {
-          ...riskGroupProps,
           ...freeDatesProps,
         },
       };
@@ -62,14 +58,6 @@
   import { dev } from "$app/env";
   import { onMount } from "svelte";
   import FreeDates from "$lib/FreeDates.svelte";
-  import EligibleGroups from "$lib/EligibleGroups.svelte";
-
-  interface EligibleGroup {
-    label: string;
-  }
-
-  export let groups: Record<string, EligibleGroup>;
-  export let groupsLastUpdated: Date;
 
   export let dates: Record<string, number>;
   export let datesLastUpdated: Date;
@@ -126,9 +114,6 @@
     centres={dates}
     lastUpdated={datesLastUpdated}
   />
-
-  <h2>Berechtigte Gruppen</h2>
-  <EligibleGroups {groups} lastUpdated={groupsLastUpdated} />
 </main>
 
 <footer>

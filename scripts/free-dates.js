@@ -35,6 +35,7 @@ const LIST_ID = __DEV__
  * @type {Record<string, number>}
  */
 const CENTRE_TO_SUPRESSION_GROUP_ID = {
+  "Annaberg IZ": 23037,
   "Bautzen IZ": 22686,
   "Belgern IZ": 22687,
   "Borna IZ": 22688,
@@ -42,10 +43,13 @@ const CENTRE_TO_SUPRESSION_GROUP_ID = {
   "Dresden IZ": 22664,
   "Eich IZ": 22690,
   "Erz IZ": 22691,
+  "Grimma IZ": 23038,
+  "Kamenz IZ": 23039,
   "Leipzig Messe IZ": 22692,
   "Löbau IZ": 22693,
   "Mittweida IZ": 22694,
   "Pirna IZ": 22695,
+  "Plauen IZ": 23040,
   "Riesa IZ": 22696,
   "Zwickau IZ": 22697,
 };

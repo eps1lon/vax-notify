@@ -2,25 +2,6 @@
   export const load: import("@sveltejs/kit").Load = async function load({
     fetch,
   }) {
-    async function loadRiskGroups() {
-      const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/eligibleGroups.json`;
-      const response = await fetch(url);
-
-      // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-      if (response.ok) {
-        const {
-          groups,
-          lastUpdated: lastUpdatedString,
-          // @ts-expect-error https://github.com/sveltejs/kit/issues/691
-        } = await response.json();
-
-        return {
-          groups,
-          groupsLastUpdated: new Date(lastUpdatedString),
-        };
-      }
-    }
-
     async function loadFreeDates() {
       const url = `https://vax-notify.s3.eu-central-1.amazonaws.com/data/freeDates.json`;
       const response = await fetch(url);

@@ -250,7 +250,7 @@ async function postChangeLogIfChanged(dates, snapshot, config) {
   }
 
   if (didRemoveCentres) {
-    markdown += `\n#### Gelöschte Zentren\n${removedCentres.forEach
+    markdown += `\n#### Gelöschte Zentren\n${removedCentres
       .map((name) => {
         return `* ${name}`;
       })

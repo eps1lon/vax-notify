@@ -13,11 +13,6 @@ jobs:
       - run: yarn lint
       - run: yarn test:types
       - run: yarn test
-      - run: yarn risk-groups --dry
-      - uses: actions/upload-artifact@v2
-        with:
-          name: eligibleGroups
-          path: data/eligibleGroups.json
       - run: yarn free-dates --dry --dryMail --notify-no-dates
       - uses: actions/upload-artifact@v2
         with:

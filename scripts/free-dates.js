@@ -258,7 +258,7 @@ async function postChangeLogIfChanged(dates, snapshot, config) {
   }
 
   if (didChangeDates) {
-    markdown += `\n#### Geänderted Gruppen\n${Object.entries(changedDates)
+    markdown += `\n#### Geänderte Gruppen\n${Object.entries(changedDates)
       .map(([name, change]) => {
         return `* ${name}
   \`\`\`diff
